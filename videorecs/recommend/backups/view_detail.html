@@ -1,0 +1,346 @@
+<head>
+<link rel="stylesheet" type="text/css" href="/static/recommend/css/base.css" />
+<link rel="stylesheet" type="text/css" href="/static/recommend/css/dashboard.css" />
+{% if demo_mode == 'sims' %}
+<script type="text/javascript">
+    function setNextSimsMovie(nextSimsMovie) {
+        document.getElementById('simsNextMovieID').value = nextSimsMovie;
+        document.getElementsByName('changeSimsMovie')[0].submit();
+    }
+</script>
+{% endif %}
+</head>
+
+<body class=" dashboard" data-admin-utc-offset="0">
+
+<!-- Container -->
+<div id="container">
+
+<!-- Header -->
+<div id="header" style="background-image:url('//d1.awsstatic.com/r2018/r/Concierge/ImgHead_Concierge.a30086a39a21d7c0199bd2ec682ceb99061318f0.jpg');">
+    <div id="branding">
+        <h1 id="site-name">Amazon Personalize</h1>
+        <div>
+        <div style="width: 60%;font-size: 20px;"><p>Real-time personalization and recommendation, based on the same technology used at Amazon.com</p></div>
+        <div style="width: 40%;"></div>
+        </div>
+    </div>
+</div>
+<!-- End Header -->
+
+<!-- Content -->
+<div id="content" style="width: 96%;">
+    <h1>Video Recommendations - Personalization Results</h1>
+
+{% load static %}
+
+<!-- First Row -->
+<div style="display: flex;">
+
+<!-- Config/User Column -->
+<div>
+
+    <!-- Mode -->
+    <div class="app-auth module" style="width:300px; padding-right: 20px;">
+    <!-- First form is for the op-mode dropdown -->
+    <form name="operationMode" method="post">
+    {% csrf_token %}
+        <table style="width: 300px;">
+            <caption>Control Panel</caption>
+            <tr class="model-group">
+                <th scope="row">Personalize Mode</th>
+                <td>
+                    <select name="opMode" id="opMode" onchange="this.form.submit()" value="{{ demo_mode }}">
+                        <option value="recommend" {% if demo_mode == 'recommend' %} selected {% endif %}>Recommendations</option>
+                        <option value="ranking" {% if demo_mode == 'ranking' %} selected {% endif %}>Personal Ranking</option>
+                        <option value="sims" {% if demo_mode == 'sims' %} selected {% endif %}>Similar Items</option>
+                    </select>
+                </td>
+            </tr>
+        </table>
+    </form>
+    <!-- Second form is for the navigation - split as we don't want these to push op-code data to the handler -->
+    <form name="navigationButtons" method="post">
+    {% csrf_token %}
+        <table style="width: 300px;">
+            <tr class="model-group">
+                <td><input type="submit" value="Prev User" formaction="{% url 'recommend:userDetail' userid|add:-1 %}" /></td>
+                <td><input type="submit" value="Next User" formaction="{% url 'recommend:userDetail' userid|add:1 %}" /></td>
+                <td><input type="submit" value="Home" formaction="/recommend/" /></td>
+            </tr>
+       </table>
+    </form>
+    </div>
+    <!-- END Mode -->
+    
+    <!-- Mode Control -->
+    <div class="app-auth module" style="padding-right: 20px;">
+    <form name="datasetSelection" method="post">
+    {% csrf_token %}
+        <table style="width: 300px;">
+            {% if demo_mode == 'recommend' %}<caption>Recommendations</caption>{% endif %}
+            {% if demo_mode == 'ranking' %}<caption>Personal Ranking</caption>{% endif %}
+            {% if demo_mode == 'sims' %}<caption>Similar Items</caption>{% endif %}
+    {% if demo_mode == 'sims' %}
+            <tr><td><b>Ordering</b>&nbsp;&nbsp;&nbsp;
+                    <select name="enableReranking" id="enableReranking" onchange="this.form.submit()" {% if simsOrderingDisabled %} disabled {% endif %} >
+                        <option value="off" {% if sims_ranking == 'off' %} selected {% endif %}>Most Popular</option>
+                        <option value="on" {% if sims_ranking == 'on' %} selected {% endif %}>Personalized List</option>
+                    </select>
+                    <input type="hidden" id="simsNextMovieModeToggle" name="simsNextMovieModeToggle" value="{{ sims_next_movie }}">
+            </td></tr>
+    {% endif %}
+    {% if demo_mode == 'ranking' %}
+            <tr><td><b>Genre Choice</b>&nbsp;&nbsp;&nbsp;
+                    <select name="top25Genre" id="top25Genre" onchange="this.form.submit()">
+                        <option value="all" {% if ranking_genre == 'all' %} selected {% endif %}>All</option>
+                        <option value="action" {% if ranking_genre == 'action' %} selected {% endif %}>Action</option>
+                        <option value="adventure" {% if ranking_genre == 'adventure' %} selected {% endif %}>Adventure</option>
+                        <option value="animation" {% if ranking_genre == 'animation' %} selected {% endif %}>Animation</option>
+                        <option value="childrens" {% if ranking_genre == 'childrens' %} selected {% endif %}>Children</option>
+                        <option value="comedy" {% if ranking_genre == 'comedy' %} selected {% endif %}>Comedy</option>
+                        <option value="crime" {% if ranking_genre == 'crime' %} selected {% endif %}>Crime</option>
+                        <option value="documentary" {% if ranking_genre == 'documentary' %} selected {% endif %}>Documentary</option>
+                        <option value="drama" {% if ranking_genre == 'drama' %} selected {% endif %}>Drama</option>
+                        <option value="fantasy" {% if ranking_genre == 'fantasy' %} selected {% endif %}>Fantasy</option>
+                        <option value="filmnoir" {% if ranking_genre == 'filmnoir' %} selected {% endif %}>Film Noir</option>
+                        <option value="musical" {% if ranking_genre == 'musical' %} selected {% endif %}>Musical</option>
+                        <option value="mystery" {% if ranking_genre == 'mystery' %} selected {% endif %}>Mystery</option>
+                        <option value="romance" {% if ranking_genre == 'romance' %} selected {% endif %}>Romance</option>
+                        <option value="scifi" {% if ranking_genre == 'scifi' %} selected {% endif %}>Sci-Fi</option>
+                        <option value="thriller" {% if ranking_genre == 'thriller' %} selected {% endif %}>Thriller</option>
+                        <option value="war" {% if ranking_genre == 'war' %} selected {% endif %}>War</option>
+                        <option value="western" {% if ranking_genre == 'western' %} selected {% endif %}>Western</option>
+                    </select>
+            </td></tr>
+    {% endif %}
+    <!-- Need this control to move depending on the mode -->
+    {% if demo_mode == 'recommend' %}
+            <tr><td><b>Show User Reviews</b>&nbsp;&nbsp;&nbsp;
+                    <select name="showReviewsToggle" id="showReviewsToggle" onchange="this.form.submit()">
+                        <option value="on" {% if showReviewsDataset == 'on' %} selected {% endif %}>Show Reviews</option>
+                        <option value="off" {% if showReviewsDataset == 'off' %} selected {% endif %}>Hide Reviews</option>
+                    </select>
+            </td></tr>
+    {% endif %}
+            <tr><td><b>Model 1</b>&nbsp;&nbsp;&nbsp;
+                    <select name="model1Dropdown" id="model1Dropdown" onchange="this.form.submit()">
+                    {% for model in modelDropdown1 %}
+                        <option value="{{ model.sort }}" {{ model.selected }}>{{ model.name }}</option>
+                    {% endfor %}
+                    </select>
+            </td></tr>
+    <!-- Model 2 only available on RECOMMEND mode -->
+    {% if demo_mode == 'recommend' %}
+            <tr><td><b>Model 2</b>&nbsp;&nbsp;&nbsp;
+                    <select name="model2Dropdown" id="model2Dropdown" onchange="this.form.submit()">
+                    {% for model in modelDropdown2 %}
+                        <option value="{{ model.sort }}" {{ model.selected }}>{{ model.name }}</option>
+                    {% endfor %}
+                    </select>
+            </td></tr>
+    {% endif %}
+    <!-- Need this control to move depending on the mode -->
+    {% if demo_mode != 'recommend' %}
+            <tr><td><b>Show User Reviews</b>&nbsp;&nbsp;&nbsp;
+                    <select name="showReviewsToggle" id="showReviewsToggle" onchange="this.form.submit()">
+                        <option value="on" {% if showReviewsDataset == 'on' %} selected {% endif %}>Show Reviews</option>
+                        <option value="off" {% if showReviewsDataset == 'off' %} selected {% endif %}>Hide Reviews</option>
+                    </select>
+            </td></tr>
+    {% endif %}
+            
+            <tr><td><input type="submit" value="Refresh Models" name="refreshModels"/></td></tr>
+        </table>
+    </form>
+    </div>
+    <!-- END Mode Control -->
+
+    <!-- User Info -->
+    <div class="app-auth module" style="padding-right: 20px;">
+        <table style="width: 300px;">
+            <caption>Current User</caption>
+            <tr class="model-group">
+                <th scope="row">UserId</th>
+                <td>{{ userid }}</td>
+            <tr class="model-group">
+                <th scope="row">Age</th>
+                <td>{{ age }}</td>
+            <tr class="model-group">
+                <th scope="row">Gender</th>
+                <td>{{ gender }}</td>
+            <tr class="model-group">
+                <th scope="row">Occupation</th>
+                <td>{{ occupation }}</td>
+        </table>
+    </div>
+    <!-- END User Info -->
+
+    <!-- Review Summary -->
+    <div class="app-auth module" style="padding-right: 20px;">
+     
+    <table style="width: 300px;">
+        <caption>User Review Summary</caption>
+        {% for review in review_list %}
+        <tr class="model-group">
+            <td>{{ review }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    </div>
+    <!-- END Review Summary -->
+</div>
+<!-- END Config/User Column -->
+
+<!-- Movies Column -->
+<div class="app-auth module" style="overflow-x: scroll; overflow-y: hidden;">
+
+<!-- TOP GENRE - top films in the genre -->
+{% if most_popular_films %}
+<table style="table-layout:fixed;">
+    <caption>Most Poular Movies in Selected Genre</caption>
+    <tr>
+        {% for movie in most_popular_films %}
+        <td align='center'>
+          <img src="{{ movie.poster }}" width="182" height="268">
+          <p> {{ movie.year }}
+        </td>
+        {% endfor %}
+    </tr>
+    <tr>
+        {% for movie in most_popular_films %}
+        <td style="white-space: normal; word-wrap:break-word;">
+          <b>{{ movie.title }}</b></br>
+          <i>{{ movie.genre }}</i>
+        </td>
+        {% endfor %}
+    </tr>
+</table>
+{% endif %}
+<!-- END TOP GENRE -->
+
+<!-- REVIEWS UPPER - user top reviews -->
+<!-- Note: for 'recommend" mode this is above the models, otherwise it's below -->
+{% if movie_list and demo_mode == 'recommend' %}
+<table style="table-layout:fixed;">
+    <caption>Your Top Movie Reviews</caption>
+        {% for movie in movie_list %}
+        <td align='center'>
+          <img src="{{ movie.poster }}" width="182" height="268">
+          <p><img src="/static/recommend/images/star-{{ movie.rating }}.png">
+          </br>{{ movie.year }}
+        </td>
+        {% endfor %}
+    </tr>
+    <tr>
+        {% for movie in movie_list %}
+        <td style="white-space: normal; word-wrap:break-word;">
+          <b>{{ movie.title }}</b></br>
+          <i>{{ movie.genre }}</i>
+        </td>
+        {% endfor %}
+    </tr>
+</table>
+{% endif %}
+<!-- END REVIEWS UPPER -->
+
+<!-- MODEL 1 - output from Model-1 Personalization choice.  Note the extra -->
+<!-- customisation required for SIMS to allow for the <form> and click-throughs -->
+{% if model1PersonalizeList %}
+{% if demo_mode == 'sims' %}
+<form name="changeSimsMovie" method="post">
+{% csrf_token %}
+{% endif %}
+<table style="table-layout:fixed;">
+    <caption>{{ model1PersonalizeTitle }}</caption>
+    <tr>
+{% if demo_mode == 'sims' %}
+        <input type="hidden" id="simsNextMovieID" name="simsNextMovieID" value="0">
+{% endif %}
+        {% for movie in model1PersonalizeList %}
+        <td align='center'>
+{% if movie.noSimsLink %}
+          <img src="{{ movie.poster }}" width="182" height="268" />
+{% else %}
+          <img src="{{ movie.poster }}" width="182" height="268" onclick="setNextSimsMovie({{ movie.movieID }}); this.form.submit();" />
+{% endif %}
+          <p> {{ movie.year }}
+        </td>
+        {% endfor %}
+    </tr>
+    <tr>
+        {% for movie in model1PersonalizeList %}
+        <td style="white-space: normal; word-wrap:break-word;">
+          <b>{{ movie.title }}</b></br>
+          <i>{{ movie.genre }}</i>
+        </td>
+        {% endfor %}
+    </tr>
+</table>
+{% if demo_mode == 'sims' %}
+</form>
+{% endif %}
+{% endif %}
+<!-- END MODEL 1 -->
+
+<!-- MODEL 2 - output from Model-2 Personalization choice -->
+{% if model2PersonalizeList %}
+<table style="table-layout:fixed;">
+    <caption>{{ model2PersonalizeTitle }}</caption>
+    <tr>
+        {% for movie in model2PersonalizeList %}
+        <td align='center'>
+          <img src="{{ movie.poster }}" width="182" height="268">
+          <p> {{ movie.year }}
+        </td>
+        {% endfor %}
+    </tr>
+    <tr>
+        {% for movie in model2PersonalizeList %}
+        <td style="white-space: normal; word-wrap:break-word;">
+          <b>{{ movie.title }}</b></br>
+          <i>{{ movie.genre }}</i>
+        </td>
+        {% endfor %}
+    </tr>
+</table>
+{% endif %}
+<!-- END MODEL 2 -->
+
+<!-- REVIEWS LOWER - user top reviews -->
+<!-- Note: for 'recommend" mode this is above the models, otherwise it's below -->
+{% if movie_list and demo_mode != 'recommend' %}
+<table style="table-layout:fixed;">
+    <caption>Your Top Movie Reviews</caption>
+        {% for movie in movie_list %}
+        <td align='center'>
+          <img src="{{ movie.poster }}" width="182" height="268">
+          <p><img src="/static/recommend/images/star-{{ movie.rating }}.png">
+          </br>{{ movie.year }}
+        </td>
+        {% endfor %}
+    </tr>
+    <tr>
+        {% for movie in movie_list %}
+        <td style="white-space: normal; word-wrap:break-word;">
+          <b>{{ movie.title }}</b></br>
+          <i>{{ movie.genre }}</i>
+        </td>
+        {% endfor %}
+    </tr>
+</table>
+{% endif %}
+<!-- END REVIEWS LOWER -->
+
+</div>
+<!-- END Movies Column -->
+
+</div>
+<!-- END First Row -->
+
+</div>
+<!-- END Content -->
+
+</div>
+<!-- END Container -->
+

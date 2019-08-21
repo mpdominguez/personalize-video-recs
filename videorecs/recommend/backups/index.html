@@ -1,0 +1,122 @@
+<head>
+<link rel="stylesheet" type="text/css" href="/static/recommend/css/base.css" />
+<link rel="stylesheet" type="text/css" href="/static/recommend/css/dashboard.css" />
+</head>
+
+<body class=" dashboard" data-admin-utc-offset="0">
+
+<!-- Container -->
+<div id="container">
+
+<!-- Header -->
+<div id="header" style="background-image:url('//d1.awsstatic.com/r2018/r/Concierge/ImgHead_Concierge.a30086a39a21d7c0199bd2ec682ceb99061318f0.jpg');">
+    <div id="branding">
+        <h1 id="site-name">Amazon Personalize</h1>
+        <div>
+            <div style="width: 60%;font-size: 20px;"><p>Real-time personalization and recommendation, based on the same technology used at Amazon.com</p></div>
+            <div style="width: 40%;"></div>
+        </div>
+    </div>
+</div>
+<!-- End Header -->
+
+<!-- Content -->
+<div id="content" class="colMS" style="width: 1100px;">
+    <h1>Video Recommendations - Model Summary</h1>
+
+{% load static %}
+
+<!-- Content-Main -->
+<div id="content-main">
+
+<div style="display: flex">
+
+<!-- Model Metrics -->
+<div class="app-auth module" style="width:650px; padding-right:50px;">
+    
+<table>
+    <caption>Model Precision Metrics</caption>
+    <tr class="model-group">
+        <th>Model Type</th>
+        <th>ML Recipe</th>
+        <th>Prec@5</th>
+        <th>Prec@10</th>
+        <th>Prec@25</th>
+    </tr>
+    {% for metric in modelMetrics %}
+    <tr class="model-group">
+        <td>{{ metric.title }}</td>
+        <td>{{ metric.recipe }}</td>
+        <td>{{ metric.precisionAt5 }}</td>
+        <td>{{ metric.precisionAt10 }}</td>
+        <td>{{ metric.precisionAt25 }}</td>
+    </tr>
+    {% endfor %}
+    <tr>
+        <td></td><td></td>
+        <td colspan="3" align="center"><i>Larger numbers are better</i></td>
+    </tr>
+</table>
+
+<form action="{% url 'recommend:selectuser' %}" method="post">
+{% csrf_token %}
+
+<table>
+    <tr class="model-group">
+       <td><input type="submit" name="random" value="Select Random User" /></td>
+    <tr>
+</table>
+
+</form>
+
+</div>
+<!-- END Model-Metrics -->
+
+<!-- Review Database Info -->
+<div class="app-auth module" style="padding-right:50px;">
+<table>
+    <caption>Personalize Data Model</caption>
+
+    <tr class="model-group">
+        <th scope="row">Number of Reviewers</th>
+        <td>942</tb>
+    </tr>
+    <tr class="model-group">
+        <th scope="row">Number of Movies Reviewed</th>
+        <td>1,681</tb>
+    </tr>
+    <tr class="model-group">
+        <th scope="row">Number of User/Movie Interactions</th>
+        <td>100,000</tb>
+    </tr>
+</table>
+</div>
+<!-- END Review Database Info -->
+
+<!-- Docs Download -->
+<div class="app-auth module">
+<table>
+    <caption>Documentation</caption>
+
+    <tr class="model-group">
+        <th scope="row">PDF Link</th>
+        <td>
+            <a href="{% static "recommend/docs/personalize-demo-docs.pdf" %}" target="_blank">
+            <img src="{% static "recommend/images/pdf.png" %}" width="64" height="64" />
+            </a>
+        </tb>
+    </tr>
+</table>
+</div>
+<!-- END Docs Download -->
+
+</div>
+
+</div>
+<!-- END Content-Main -->
+
+</div>
+<!-- END Content -->
+
+</div>
+<!-- END Container -->
